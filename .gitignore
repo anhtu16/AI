@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+*.tmp
+*.log
+.env
+.venv/
+
+/model_sentiment/
+/model_aspect/
+/absa_app/models/aspect/
+/absa_app/models/sentiment/
+
+# IDE miscellany
+.idea/
+.vscode/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
