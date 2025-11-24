@@ -144,6 +144,7 @@ class ABSAService:
 
     def analyze_text(self, text: str) -> Dict[str, object]:
         aspects = self.predict_aspects(text)
+        global_sentiment = self.predict_sentiment(text)
 
         enriched_aspects: List[AspectPrediction] = []
         for aspect in aspects:
@@ -156,7 +157,16 @@ class ABSAService:
                 )
             )
 
-        sentiment = self.aggregate_sentiment(enriched_aspects)
+        if enriched_aspects:
+            aspect_sentiment = self.aggregate_sentiment(enriched_aspects)
+            # Prefer aspect-aware sentiment only when it is at least as confident as the global one.
+            sentiment = (
+                aspect_sentiment
+                if aspect_sentiment.score >= global_sentiment.score
+                else global_sentiment
+            )
+        else:
+            sentiment = global_sentiment
         return {
             "text": text,
             "aspects": enriched_aspects,
@@ -191,7 +201,7 @@ class ABSAService:
         )
 
         top_weight, top_sentiment = scored_items[0]
-        return SentimentPrediction(label=top_sentiment.label, score=top_weight)
+        return SentimentPrediction(label=top_sentiment.label, score=top_sentiment.score)
 
 
 def get_service(aspect_threshold: float = 0.3) -> ABSAService:
