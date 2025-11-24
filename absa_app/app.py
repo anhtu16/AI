@@ -1,6 +1,9 @@
+import base64
 import io
 from pathlib import Path
 from typing import List
+
+from PIL import Image
 
 import pandas as pd
 import plotly.express as px
@@ -14,6 +17,14 @@ pio.templates.default = "plotly_dark"
 @st.cache_resource(show_spinner=True)
 def load_service() -> ABSAService:
     return ABSAService()
+
+
+TEAM_MEMBERS = [
+    {"file": "Anh Tú.jpg", "name": "Anh Tú"},
+    {"file": "Bảo Nguyên.jpg", "name": "Bảo Nguyên"},
+    {"file": "Ngô Thịnh.jpg", "name": "Ngô Thịnh"},
+    {"file": "Quang Nguyễn.jpg", "name": "Quang Nguyễn"},
+]
 
 
 def inject_custom_css() -> None:
@@ -220,8 +231,146 @@ def inject_custom_css() -> None:
             .action-card small { color: #94a3b8; }
             .playbook-list li { margin-bottom: 0.3rem; }
             .playbook-list strong { color: #fefce8; }
+            .team-showcase {
+                margin-top: 2.4rem;
+            }
+            .team-showcase-header {
+                text-align: center;
+                margin-bottom: 1.4rem;
+            }
+            .team-showcase-header h3 {
+                font-size: 1.5rem;
+                letter-spacing: 0.25em;
+                text-transform: uppercase;
+                color: #e0e7ff;
+                margin: 0;
+            }
+            .team-showcase-grid {
+                display: grid;
+                gap: 1.2rem;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+            .team-card {
+                position: relative;
+                border-radius: 28px;
+                padding: 0.9rem;
+                background: rgba(13,17,33,0.9);
+                border: 1px solid rgba(148,163,184,0.28);
+                box-shadow: 0 18px 45px rgba(2,6,23,0.6);
+                overflow: hidden;
+                animation: teamFloat 8s ease-in-out infinite;
+            }
+            .team-card::before {
+                content: "";
+                position: absolute;
+                inset: -40%;
+                background: conic-gradient(from 160deg, rgba(59,130,246,0.35), rgba(236,72,153,0.45), rgba(16,185,129,0.35));
+                opacity: 0.6;
+                animation: teamGlow 14s linear infinite;
+            }
+            .team-card::after {
+                content: "";
+                position: absolute;
+                inset: 2px;
+                border-radius: 26px;
+                background: rgba(3,7,18,0.92);
+                z-index: 1;
+            }
+            .team-card > * {
+                position: relative;
+                z-index: 2;
+            }
+            .team-card-photo {
+                width: 100%;
+                padding-top: 100%;
+                border-radius: 22px;
+                background-size: cover;
+                background-position: center;
+                box-shadow: inset 0 0 40px rgba(0,0,0,0.25);
+                margin-bottom: 0.9rem;
+            }
+            .team-card-name {
+                text-align: center;
+                font-size: 1.25rem;
+                font-weight: 800;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                color: #fefce8;
+            }
+            @keyframes teamGlow {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            @keyframes teamFloat {
+                0% { transform: translateY(0px); }
+                50% { transform: translateY(-12px); }
+                100% { transform: translateY(0px); }
+            }
         </style>
         """,
+        unsafe_allow_html=True,
+    )
+
+def _prepare_square(image: Image.Image, size: int = 640) -> Image.Image:
+    width, height = image.size
+    side = min(width, height)
+    left = (width - side) // 2
+    top = (height - side) // 2
+    cropped = image.crop((left, top, left + side, top + side))
+    return cropped.resize((size, size))
+
+
+@st.cache_data(show_spinner=False)
+def load_team_gallery() -> list[dict[str, str]]:
+    base_dir = Path(__file__).resolve().parents[1]
+    gallery: list[dict[str, str]] = []
+    for member in TEAM_MEMBERS:
+        image_path = base_dir / member["file"]
+        if not image_path.exists():
+            continue
+        try:
+            with Image.open(image_path) as img:
+                prepared = _prepare_square(img.copy())
+                buffer = io.BytesIO()
+                prepared.save(buffer, format="JPEG", quality=90)
+                encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
+                gallery.append(
+                    {
+                        "name": member["name"],
+                        "role": member["role"],
+                        "src": f"data:image/jpeg;base64,{encoded}",
+                    }
+                )
+        except Exception:
+            continue
+    return gallery
+
+
+def render_team_section() -> None:
+    gallery = load_team_gallery()
+    if not gallery:
+        st.info("Chưa tìm thấy ảnh của các thành viên.")
+        return
+    cards_html = "".join(
+        [
+            (
+                "<div class='team-card'>"
+                f"<div class='team-card-photo' style='background-image:url(\"{member['src']}\")'></div>"
+                f"<div class='team-card-name'>{member['name']}</div>"
+                "</div>"
+            )
+            for member in gallery
+        ]
+    )
+    st.markdown(
+        (
+            "<div class='team-showcase'>"
+            "<div class='team-showcase-header'>"
+            "<h3>Thành viên nhóm</h3>"
+            "</div>"
+            f"<div class='team-showcase-grid'>{cards_html}</div>"
+            "</div>"
+        ),
         unsafe_allow_html=True,
     )
 
@@ -365,7 +514,7 @@ def batch_analysis(service: ABSAService) -> None:
         st.session_state["analysis_df"] = analysis_df
 
         st.success("Phân tích hoàn tất!")
-        display_df = analysis_df.drop(columns=["aspects_detail"])
+        display_df = analysis_df.drop(columns=["aspects_detail", "sentiment_label", "sentiment_score"])
         display_df = display_df.rename(columns={"aspects_display": "aspects"})
         st.dataframe(display_df, use_container_width=True)
 
@@ -743,6 +892,7 @@ def main() -> None:
             """,
             unsafe_allow_html=True,
         )
+    render_team_section()
     service = load_service()
 
     tab_manual, tab_file, tab_dashboard, tab_actions = st.tabs(
