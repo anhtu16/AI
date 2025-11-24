@@ -36,23 +36,24 @@ def inject_custom_css() -> None:
                 left: -10vw;
                 background: conic-gradient(
                     from 180deg,
-                    rgba(125, 211, 252, 0.18),
-                    rgba(192, 132, 252, 0.12),
-                    rgba(244, 114, 182, 0.12),
-                    rgba(125, 211, 252, 0.18)
+                    rgba(125, 211, 252, 0.24),
+                    rgba(192, 132, 252, 0.18),
+                    rgba(244, 114, 182, 0.18),
+                    rgba(125, 211, 252, 0.24)
                 );
-                filter: blur(180px);
-                animation: aurora 25s linear infinite;
+                filter: blur(120px);
+                animation: aurora 15s linear infinite;
                 z-index: 0;
             }
             .stApp::after {
                 animation-direction: reverse;
-                opacity: 0.7;
+                opacity: 0.85;
             }
             @keyframes aurora {
-                0% { transform: translateY(-5%) rotate(0deg); }
-                50% { transform: translateY(5%) rotate(180deg); }
-                100% { transform: translateY(-5%) rotate(360deg); }
+                0% { transform: translate(-6%, -4%) scale(0.95) rotate(0deg); }
+                35% { transform: translate(8%, 6%) scale(1.05) rotate(120deg); }
+                70% { transform: translate(-4%, 10%) scale(1.1) rotate(240deg); }
+                100% { transform: translate(-6%, -4%) scale(0.95) rotate(360deg); }
             }
             .block-container {
                 padding-top: 2rem;
@@ -64,10 +65,10 @@ def inject_custom_css() -> None:
                 content: "";
                 position: fixed;
                 inset: 0;
-                background: radial-gradient(circle at 10% 20%, rgba(125,211,252,0.15), transparent 45%),
-                            radial-gradient(circle at 80% 10%, rgba(248,113,113,0.12), transparent 35%),
-                            radial-gradient(circle at 50% 80%, rgba(192,132,252,0.12), transparent 40%);
-                filter: blur(60px);
+                background: radial-gradient(circle at 10% 20%, rgba(125,211,252,0.25), transparent 45%),
+                            radial-gradient(circle at 80% 10%, rgba(248,113,113,0.2), transparent 35%),
+                            radial-gradient(circle at 50% 80%, rgba(192,132,252,0.2), transparent 40%);
+                filter: blur(40px);
                 z-index: 0;
             }
             .main .block-container {
@@ -86,7 +87,7 @@ def inject_custom_css() -> None:
                 height: 140px;
                 background: radial-gradient(circle, rgba(94,234,212,0.35), transparent 65%);
                 filter: blur(8px);
-                animation: pulse 6s ease-in-out infinite;
+                animation: pulse 4s ease-in-out infinite;
             }
             @keyframes pulse {
                 0% { transform: scale(0.9); opacity: 0.6; }
