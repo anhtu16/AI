@@ -337,7 +337,6 @@ def load_team_gallery() -> list[dict[str, str]]:
                 gallery.append(
                     {
                         "name": member["name"],
-                        "role": member["role"],
                         "src": f"data:image/jpeg;base64,{encoded}",
                     }
                 )
@@ -410,17 +409,17 @@ def manual_analysis(service: ABSAService) -> None:
             sentiment: SentimentPrediction = result["sentiment"]
 
             if sentiment:
-                col_a, col_b, col_c = st.columns(3)
-                with col_a:
-                    st.metric("Sentiment tổng thể", sentiment.label, f"{sentiment.score:.2f}")
+                col_b, col_c = st.columns(2)
+                # with col_a:
+                #     st.metric("Sentiment tổng thể", sentiment.label, f"{sentiment.score:.2f}")
                 with col_b:
                     st.metric("Số aspect phát hiện", len(aspects))
                 with col_c:
                     st.metric("Ngưỡng hiện tại", f"{service.aspect_threshold:.2f}")
-                st.markdown(
-                    f"<div class='pill pill-{sentiment.label.upper()}'>Confidence {sentiment.score:.2f}</div>",
-                    unsafe_allow_html=True,
-                )
+                # st.markdown(
+                #     f"<div class='pill pill-{sentiment.label.upper()}'>Confidence {sentiment.score:.2f}</div>",
+                #     unsafe_allow_html=True,
+                # )
 
             st.write("**Insight theo từng aspect**")
             if aspects:
@@ -806,8 +805,6 @@ def action_center() -> None:
         if col not in {"sentiment_label", "sentiment_score", "aspects_display", "aspects_detail"}
     ]
     sample_col = text_columns[0] if text_columns else None
-
-    st.markdown("##### 🧩 Gợi ý hành động cụ thể")
     suggestions = []
     owner_map = {
         "PRICE": "Sales & Pricing",
