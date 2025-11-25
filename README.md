@@ -17,6 +17,16 @@ source .venv/Scripts/activate  # Windows PowerShell dùng .\.venv\Scripts\activa
 # 2. Cài thư viện
 pip install -r absa_app/requirements.txt
 
+sau phần chạy requirement.txt bổ sung thông tin sau:
+
+Tải file model ở link drive https://drive.google.com/drive/folders/1oCb3qhSjx7YOAAnwvH1A2RGn2ZHwtR1X?usp=sharing
+
+Vị trí và tên file cần đặt trong thư mục:
+- Tên file: models
+- Vị trí: AI/absa_app/models
+---
+Sau đó mới thực hiện chạy bước tiếp theo
+
 # 3. Chạy Streamlit
 cd absa_app
 streamlit run app.py
